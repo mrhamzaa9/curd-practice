@@ -52,7 +52,6 @@ const loginUser = async (req, res) => {
         const token = jwt.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: "1h" });
         res.cookie("token", token, { httpOnly: true });
 
-        console.log("Generated Token:", token);
         res.status(200).json({ message: "Login successful", token });
     }
     catch (error) {
@@ -87,10 +86,6 @@ const updateUser = async (req, res) => {
 //again token assign
  const token = jwt.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: "1h" });
         res.cookie("token", token, { httpOnly: true });
-
-        console.log("Generated Token:", token);
-        
-
         res.status(200).json({ message: 'User updated successfully', user,token });
     }
     catch (error) {
