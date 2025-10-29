@@ -10,31 +10,69 @@ const addUser = async (req, res) => {
         const { name, email, password, age } = req.body;
         if (!name || !email || !password || !age) {
             return res.status(400).json({ error: "All fields are required" });
+        } 
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ error: "User already exists" });
         }
-         const existingUser = User.findOne({ email });
-    if (existingUser) {
-        return res.status(400).json({ error: "User already exists" });
-    }
+
         const hashedPassword = await bcrypt.hash(password, 10)
         newUser = new User({ name, email, password: hashedPassword, age });
         await newUser.save();
+
         res.status(201).json({ message: "User registered successfully", newUser });
     } catch (error) {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 //  get all user info
-const getUser =async (req,res)=>{
-    try{    
-    const users =await User.find()
-    res.status(200).json(users)
+const getUser = async (req, res) => {
+    try {
+        const users = await User.find()
+        res.status(200).json(users)
     }
-    catch(error){
-             return res.status(500).json({ error: "Internal Server Error" });   
+    catch (error) {
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+// login user and assign token
+const loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email })
+        if (!user) {
+            res.status(404).json({ message: "EMAIL NOT REGISTER" })
+        }
+        const match = await bcrypt.compare(password, user.password)
+        if (!match) {
+            res.status(401).json({ message: "WRONG PASSWORD" })
+        }
+        //  assign token
+        const token = jwt.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: "1h" });
+        res.cookie("token", token, { httpOnly: true });
+
+        console.log("Generated Token:", token);
+        res.status(200).json({ message: "Login successful", token });
+    }
+    catch (error) {
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+//delete the user by id
+const deleteUser = async (req, res) => {
+    try {
+        const id = req.params.id
+        const users = await User.findByIdAndDelete(id)
+        if (!users) {
+            res.status(404).send("This user does not exist.")
+        }
+        res.status(200).send("This user remove.")
+    }
+    catch (error) {
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
 
-
-
-module.exports = { addUser ,getUser}
+module.exports = { addUser, getUser, loginUser, deleteUser }
