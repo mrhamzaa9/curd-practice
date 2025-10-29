@@ -10,7 +10,7 @@ const addUser = async (req, res) => {
         const { name, email, password, age } = req.body;
         if (!name || !email || !password || !age) {
             return res.status(400).json({ error: "All fields are required" });
-        } 
+        }
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ error: "User already exists" });
@@ -74,5 +74,29 @@ const deleteUser = async (req, res) => {
     }
 }
 
+// update the user by id
+const updateUser = async (req, res) => {
+    try {
+        const id = req.params.id
+        const { name, email, age } = req.body
+        const user = await User.findByIdAndUpdate(id, { name, email, age },
+            { new: true })
+        if (!user) {
+            res.status(400).json({ message: 'WRONG ID' })
+        }
+//again token assign
+ const token = jwt.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: "1h" });
+        res.cookie("token", token, { httpOnly: true });
 
-module.exports = { addUser, getUser, loginUser, deleteUser }
+        console.log("Generated Token:", token);
+        
+
+        res.status(200).json({ message: 'User updated successfully', user,token });
+    }
+    catch (error) {
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+
+module.exports = { addUser, getUser, loginUser, deleteUser ,updateUser }
