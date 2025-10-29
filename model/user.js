@@ -21,7 +21,12 @@ const userSchema = new mongoose.Schema({
         required: true,
         minlength: 8,
         trim: true,
-    }
+    },
+     role: {
+    type: String,
+    enum: ['user', 'admin'], 
+    default: 'user'           
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

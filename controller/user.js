@@ -49,8 +49,10 @@ const loginUser = async (req, res) => {
             res.status(401).json({ message: "WRONG PASSWORD" })
         }
         //  assign token
-        const token = jwt.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: "1h" });
-        res.cookie("token", token, { httpOnly: true });
+        const token = jwt.sign({ id: user.id,  role: user.role, email: user.email }, secretKey, { expiresIn: "20h" });
+        res.cookie("token", token );
+        console.log('res.cookie', res.cookie);
+        
 
         res.status(200).json({ message: "Login successful", token });
     }
@@ -84,7 +86,7 @@ const updateUser = async (req, res) => {
             res.status(400).json({ message: 'WRONG ID' })
         }
 //again token assign
- const token = jwt.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: "1h" });
+ const token = jwt.sign({ id: user.id, role: user.role, email: user.email }, secretKey, { expiresIn: "20h" });
         res.cookie("token", token, { httpOnly: true });
         res.status(200).json({ message: 'User updated successfully', user,token });
     }
