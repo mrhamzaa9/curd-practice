@@ -6,6 +6,8 @@ const bodyParser = require("body-parser");
 const userApis = require("./routes/user");
 const cookieParser = require("cookie-parser");
 require("dotenv").config(); 
+
+
 const PORT = process.env.PORT
 
 // middleware for using to converter the data into json format
@@ -14,6 +16,8 @@ app.use(cookieParser());
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(express.static("public"));
+app.use('/uploads', express.static('uploads'));
 // rest api of user
 app.use("/user", userApis)
 

@@ -7,8 +7,9 @@ const secretKey = process.env.SECRET_KEY;
 // signup new user
 const addUser = async (req, res) => {
     try {
+    const imagePath = req.file ? req.file.path : null;
         const { name, email, password, age } = req.body;
-        if (!name || !email || !password || !age) {
+        if (!name || !email || !password || !age ) {
             return res.status(400).json({ error: "All fields are required" });
         }
         const existingUser = await User.findOne({ email });
@@ -17,10 +18,10 @@ const addUser = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
-        newUser = new User({ name, email, password: hashedPassword, age });
+        newUser =  new User({ name, email, password: hashedPassword, age,image: imagePath});
         await newUser.save();
 
-        res.status(201).json({ message: "User registered successfully", newUser });
+        res.status(201).json({ message: "User registered successfully", newUser , imagePath});
     } catch (error) {
         return res.status(500).json({ error: "Internal Server Error" });
     }
@@ -32,7 +33,7 @@ const getUser = async (req, res) => {
         res.status(200).json(users)
     }
     catch (error) {
-        return res.status(500).json({ error: "Internal Server Error" });
+        // return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
