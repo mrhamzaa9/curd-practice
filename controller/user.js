@@ -1,7 +1,6 @@
 const bcrypt = require('bcrypt');
 const User = require("../model/user");
 const jwt = require('jsonwebtoken');
-const { cloudinary } = require('../middleware/upload')
 require("dotenv").config();
 const secretKey = process.env.SECRET_KEY;
 
@@ -9,7 +8,7 @@ const secretKey = process.env.SECRET_KEY;
 const addUser = async (req, res) => {
     try {
     const imagePath = req.file ? req.file.path : null;
-     const imageId = req.file ? req.file.name : null;
+     const imageId = req.file.name 
         const { name, email, password, age } = req.body;
         if (!name || !email || !password || !age ) {
             return res.status(400).json({ error: "All fields are required" });
