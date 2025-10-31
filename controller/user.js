@@ -72,10 +72,7 @@ const deleteUser = async (req, res) => {
         if (!users) {
             res.status(404).send("This user does not exist.")
         }
-         if (users.imageId) {
-    await cloudinary.uploader.destroy(users.imageId);
-  }
-   await users.remove();
+        
         res.status(200).send("This user remove.")
     }
     catch (error) {
