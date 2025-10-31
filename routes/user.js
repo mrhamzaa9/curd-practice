@@ -8,6 +8,6 @@ router.post('/sign', upload.single('file'),UserController.addUser )
 router.post('/login',UserController.loginUser )
 router.get('/get',UserController.getUser )
 router.patch('/patch/:id',authMiddleware,UserController.updateUser )
-router.delete('/delete/:id',roleMiddleware,authMiddleware,UserController.deleteUser )
+router.delete('/delete/:id',authMiddleware,UserController.deleteUser )
 
 module.exports = router

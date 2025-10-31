@@ -30,8 +30,10 @@ const userSchema = new mongoose.Schema({
   image:{
     type:String,
     required:true
-
-  }
+  },
+  imageId: {
+     type: String,
+      default: null }    
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

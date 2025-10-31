@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const User = require("../model/user");
 const jwt = require('jsonwebtoken');
+const { cloudinary } = require('../middleware/upload')
 require("dotenv").config();
 const secretKey = process.env.SECRET_KEY;
 
@@ -8,6 +9,7 @@ const secretKey = process.env.SECRET_KEY;
 const addUser = async (req, res) => {
     try {
     const imagePath = req.file ? req.file.path : null;
+     const imageId = req.file ? req.file.name : null;
         const { name, email, password, age } = req.body;
         if (!name || !email || !password || !age ) {
             return res.status(400).json({ error: "All fields are required" });
@@ -18,10 +20,10 @@ const addUser = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
-        newUser =  new User({ name, email, password: hashedPassword, age,image: imagePath});
+        newUser =  new User({ name, email, password: hashedPassword, age,image: imagePath,imageId});
         await newUser.save();
 
-        res.status(201).json({ message: "User registered successfully", newUser , imagePath});
+        res.status(201).json({ message: "User registered successfully", newUser , });
     } catch (error) {
         return res.status(500).json({ error: "Internal Server Error" });
     }
@@ -66,9 +68,14 @@ const deleteUser = async (req, res) => {
     try {
         const id = req.params.id
         const users = await User.findByIdAndDelete(id)
+
         if (!users) {
             res.status(404).send("This user does not exist.")
         }
+         if (users.imageId) {
+    await cloudinary.uploader.destroy(users.imageId);
+  }
+   await users.remove();
         res.status(200).send("This user remove.")
     }
     catch (error) {
@@ -76,25 +83,34 @@ const deleteUser = async (req, res) => {
     }
 }
 
+
 // update the user by id
 const updateUser = async (req, res) => {
     try {
         const id = req.params.id
+        const imageId =req.file.name
+        const imagePath =req.file.path
         const { name, email, age } = req.body
-        const user = await User.findByIdAndUpdate(id, { name, email, age },
+        const user = await User.findByIdAndUpdate(id, { name, email, age,imageId,imagePath },
             { new: true })
         if (!user) {
             res.status(400).json({ message: 'WRONG ID' })
         }
 //again token assign
- const token = jwt.sign({ id: user.id, role: user.role, email: user.email }, secretKey, { expiresIn: "20h" });
+ const token = jwt.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: "20h" });
         res.cookie("token", token, { httpOnly: true });
+
+        console.log("Generated Token:", token);
+        
+
         res.status(200).json({ message: 'User updated successfully', user,token });
     }
     catch (error) {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 }
+
+
 
 
 module.exports = { addUser, getUser, loginUser, deleteUser ,updateUser }
