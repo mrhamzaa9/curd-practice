@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const validator = require("validator");
 const User = require("../model/user");
 const jwt = require('jsonwebtoken');
 require("dotenv").config();
@@ -7,23 +8,28 @@ const secretKey = process.env.SECRET_KEY;
 // signup new user
 const addUser = async (req, res) => {
     try {
-    // const imagePath = req.file ? req.file.path : null;
+        // const imagePath = req.file ? req.file.path : null;
         const { name, email, password, age } = req.body;
-        if (!name || !email || !password || !age ) {
+        const normalizedEmail = email.trim().toLowerCase();
+        if (!validator.isEmail(normalizedEmail) || !normalizedEmail.endsWith(".com")) {
+            return res.status(400).json({ error: "All fields are not correct" });
+        }
+
+        if (!name || !email || !password || !age) {
             return res.status(400).json({ error: "All fields are required" });
         }
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ normalizedEmail });
         if (existingUser) {
             return res.status(400).json({ error: "User already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
-        newUser =  new User({ name, email, password: hashedPassword, age});
+        newUser = new User({ name, email: normalizedEmail, password: hashedPassword, age });
         await newUser.save();
 
-        res.status(201).json({ message: "User registered successfully", newUser , });
+        res.status(201).json({ message: "User registered successfully", newUser, });
     } catch (error) {
-     
+
         return res.status(500).json({ error: "Internal Server Error" });
     }
 }
@@ -34,7 +40,7 @@ const getUser = async (req, res) => {
         res.status(200).json(users)
     }
     catch (error) {
-        // return res.status(500).json({ error: "Internal Server Error" });
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
@@ -42,7 +48,10 @@ const getUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email })
+        const normalizedEmail = email.toLowerCase();
+
+        const user = await User.findOne({ email: normalizedEmail });
+
         if (!user) {
             res.status(404).json({ message: "EMAIL NOT REGISTER" })
         }
@@ -51,12 +60,12 @@ const loginUser = async (req, res) => {
             res.status(401).json({ message: "WRONG PASSWORD" })
         }
         //  assign token
-        const token = jwt.sign({ id: user.id,  role: user.role, email: user.email }, secretKey, { expiresIn: "20h" });
-        res.cookie("token", token );
-        console.log('res.cookie', res.cookie);
-        
+        const token = jwt.sign({ id: user.id, role: user.role, email: user.email }, secretKey, { expiresIn: "20h" });
+        res.cookie("token", token);
+        // console.log('res.cookie', res.cookie);
 
-  res.status(200).json({ message: "Login successful", role: user.role });
+
+        res.status(200).json({ message: "Login successful", role: user.role });
     }
     catch (error) {
         return res.status(500).json({ error: "Internal Server Error" });
@@ -68,10 +77,10 @@ const deleteUser = async (req, res) => {
         const id = req.params.id
         const users = await User.findByIdAndDelete(id)
 
-        if (!users) {
+        if (!users){
             res.status(404).send("This user does not exist.")
         }
-        
+
         res.status(200).send("This user remove.")
     }
     catch (error) {
@@ -84,22 +93,22 @@ const deleteUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const id = req.params.id
-        const imageId =req.file.name
-        const imagePath =req.file.path
+        const imageId = req.file.name
+        const imagePath = req.file.path
         const { name, email, age } = req.body
-        const user = await User.findByIdAndUpdate(id, { name, email, age,imageId,imagePath },
+        const user = await User.findByIdAndUpdate(id, { name, email, age, imageId, imagePath },
             { new: true })
         if (!user) {
             res.status(400).json({ message: 'WRONG ID' })
         }
-//again token assign
- const token = jwt.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: "20h" });
+        //again token assign
+        const token = jwt.sign({ id: user.id, email: user.email }, secretKey, { expiresIn: "20h" });
         res.cookie("token", token, { httpOnly: true });
 
-        console.log("Generated Token:", token);
-        
+        // console.log("Generated Token:", token);
 
-        res.status(200).json({ message: 'User updated successfully', user,token });
+
+        res.status(200).json({ message: 'User updated successfully', user, token });
     }
     catch (error) {
         return res.status(500).json({ error: "Internal Server Error" });
@@ -109,4 +118,5 @@ const updateUser = async (req, res) => {
 
 
 
-module.exports = { addUser, getUser, loginUser, deleteUser ,updateUser }
+
+module.exports = { addUser, getUser, loginUser, deleteUser, updateUser }
