@@ -7,8 +7,7 @@ const secretKey = process.env.SECRET_KEY;
 // signup new user
 const addUser = async (req, res) => {
     try {
-    const imagePath = req.file ? req.file.path : null;
-     const imageId = req.file.name 
+    // const imagePath = req.file ? req.file.path : null;
         const { name, email, password, age } = req.body;
         if (!name || !email || !password || !age ) {
             return res.status(400).json({ error: "All fields are required" });
@@ -19,11 +18,12 @@ const addUser = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
-        newUser =  new User({ name, email, password: hashedPassword, age,image: imagePath,imageId});
+        newUser =  new User({ name, email, password: hashedPassword, age});
         await newUser.save();
 
         res.status(201).json({ message: "User registered successfully", newUser , });
     } catch (error) {
+     
         return res.status(500).json({ error: "Internal Server Error" });
     }
 }
@@ -56,7 +56,7 @@ const loginUser = async (req, res) => {
         console.log('res.cookie', res.cookie);
         
 
-        res.status(200).json({ message: "Login successful", token });
+  res.status(200).json({ message: "Login successful", role: user.role });
     }
     catch (error) {
         return res.status(500).json({ error: "Internal Server Error" });

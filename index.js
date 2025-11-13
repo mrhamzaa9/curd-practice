@@ -7,19 +7,26 @@ const userApis = require("./routes/user");
 const cookieParser = require("cookie-parser");
 require("dotenv").config(); 
 
-
+app.use(cors({
+  origin: "http://localhost:5173", // your frontend port
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true, // allow cookies or authorization headers
+}));
 const PORT = process.env.PORT
 
 // middleware for using to converter the data into json format
 app.use(express.json())
 app.use(cookieParser()); 
-app.use(cors())
+// app.use(cors())
+
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static("public"));
 app.use('/uploads', express.static('uploads'));
 // rest api of user
 app.use("/user", userApis)
+
 
 
 
