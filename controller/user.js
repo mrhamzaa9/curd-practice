@@ -65,7 +65,7 @@ const loginUser = async (req, res) => {
         // console.log('res.cookie', res.cookie);
 
 
-        res.status(200).json({ message: "Login successful", role: user.role });
+        res.status(200).json({ message: "Login successful", role: user.role ,name:user.name});
     }
     catch (error) {
         return res.status(500).json({ error: "Internal Server Error" });
@@ -73,20 +73,21 @@ const loginUser = async (req, res) => {
 }
 //delete the user by id
 const deleteUser = async (req, res) => {
-    try {
-        const id = req.params.id
-        const users = await User.findByIdAndDelete(id)
+  try {
+    const { id } = req.params;
+    const deletedUser = await User.findByIdAndDelete(id);
 
-        if (!users){
-            res.status(404).send("This user does not exist.")
-        }
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" }); // ✅ use return to stop here
+    }
 
-        res.status(200).send("This user remove.")
-    }
-    catch (error) {
-        return res.status(500).json({ error: "Internal Server Error" });
-    }
-}
+    return res.status(200).json({ message: "User removed successfully", deletedUser });
+  } catch (error) {
+    console.error("Delete error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 
 
 // update the user by id
@@ -114,8 +115,6 @@ const updateUser = async (req, res) => {
         return res.status(500).json({ error: "Internal Server Error" });
     }
 }
-
-
 
 
 

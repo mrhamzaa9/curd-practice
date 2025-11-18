@@ -6,12 +6,16 @@ const bodyParser = require("body-parser");
 const userApis = require("./routes/user");
 const cookieParser = require("cookie-parser");
 require("dotenv").config(); 
-
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://auth-react-aeqz.vercel.app"
+];
 app.use(cors({
-  origin: "http://localhost:5173", // your frontend port
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true, // allow cookies or authorization headers
+  credentials: true,
 }));
+
 const PORT = process.env.PORT
 
 // middleware for using to converter the data into json format
