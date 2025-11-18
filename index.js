@@ -9,7 +9,7 @@ require("dotenv").config();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://auth-react-aeqz.vercel.app",
- " http://localhost:4173/"
+  "http://localhost:4173/"
 ];
 app.use(cors({
   origin: allowedOrigins,
